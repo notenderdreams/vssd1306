@@ -3,5 +3,19 @@ name = "vssd1306"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "vssd1306"
+path = "src/lib.rs"
+
+[features]
+default = []
+window = ["dep:winit", "dep:wgpu", "dep:pollster", "dep:bytemuck"]
+
 [dependencies]
 embedded-graphics = "0.8"
+
+# window (optional)
+winit = { version = "0.29", optional = true }
+wgpu = { version = "0.19", optional = true }
+pollster = { version = "0.3", optional = true }
+bytemuck = { version = "1.14", features = ["derive"], optional = true }

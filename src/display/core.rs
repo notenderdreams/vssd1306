@@ -1,8 +1,5 @@
 use crate::{
-    brightness::Brightness,
-    error::DisplayError,
-    rotation::DisplayRotation,
-    size::DisplaySize,
+    brightness::Brightness, error::DisplayError, rotation::DisplayRotation, size::DisplaySize,
 };
 
 pub struct Display {
@@ -23,10 +20,7 @@ pub struct Display {
 }
 
 impl Display {
-    pub fn new(
-        size: DisplaySize,
-        rotation: DisplayRotation,
-    ) -> Self {
+    pub fn new(size: DisplaySize, rotation: DisplayRotation) -> Self {
         let (w, h) = size.dimensions();
 
         Self {
@@ -46,12 +40,8 @@ impl Display {
         }
     }
 
-    pub fn init(
-        &mut self,
-    ) -> Result<(), DisplayError> {
-        let bytes =
-            (self.native_width * self.native_height
-                / 8) as usize;
+    pub fn init(&mut self) -> Result<(), DisplayError> {
+        let bytes = (self.native_width * self.native_height / 8) as usize;
 
         self.buffer = vec![0; bytes];
         self.visible = vec![0; bytes];
@@ -61,9 +51,7 @@ impl Display {
         Ok(())
     }
 
-    pub fn flush(
-        &mut self,
-    ) -> Result<(), DisplayError> {
+    pub fn flush(&mut self) -> Result<(), DisplayError> {
         self.ensure_initialized()?;
 
         self.visible.copy_from_slice(&self.buffer);
@@ -71,9 +59,7 @@ impl Display {
         Ok(())
     }
 
-    pub fn clear(
-        &mut self,
-    ) -> Result<(), DisplayError> {
+    pub fn clear(&mut self) -> Result<(), DisplayError> {
         self.ensure_initialized()?;
 
         self.buffer.fill(0);
@@ -89,10 +75,7 @@ impl Display {
         &self.visible
     }
 
-    pub fn set_rotation(
-        &mut self,
-        rotation: DisplayRotation,
-    ) -> Result<(), DisplayError> {
+    pub fn set_rotation(&mut self, rotation: DisplayRotation) -> Result<(), DisplayError> {
         self.ensure_initialized()?;
 
         self.rotation = rotation;
@@ -100,10 +83,7 @@ impl Display {
         Ok(())
     }
 
-    pub fn set_brightness(
-        &mut self,
-        brightness: Brightness,
-    ) -> Result<(), DisplayError> {
+    pub fn set_brightness(&mut self, brightness: Brightness) -> Result<(), DisplayError> {
         self.ensure_initialized()?;
 
         self.brightness = brightness;
@@ -111,10 +91,7 @@ impl Display {
         Ok(())
     }
 
-    pub fn set_inverted(
-        &mut self,
-        inverted: bool,
-    ) -> Result<(), DisplayError> {
+    pub fn set_inverted(&mut self, inverted: bool) -> Result<(), DisplayError> {
         self.ensure_initialized()?;
 
         self.inverted = inverted;
@@ -122,24 +99,16 @@ impl Display {
         Ok(())
     }
 
-    pub fn visible_pixel(
-        &self,
-        x: u32,
-        y: u32,
-    ) -> Result<bool, DisplayError> {
+    pub fn visible_pixel(&self, x: u32, y: u32) -> Result<bool, DisplayError> {
         self.ensure_initialized()?;
 
-        let Some((nx, ny)) =
-            self.to_native_coords(x, y)
-        else {
+        let Some((nx, ny)) = self.to_native_coords(x, y) else {
             return Ok(false);
         };
 
         let index = self.byte_index(nx, ny);
 
-        let mut value =
-            ((self.visible[index] >> (ny % 8)) & 1)
-                != 0;
+        let mut value = ((self.visible[index] >> (ny % 8)) & 1) != 0;
 
         if self.inverted {
             value = !value;
@@ -148,9 +117,7 @@ impl Display {
         Ok(value)
     }
 
-    pub fn to_ascii(
-        &self,
-    ) -> Result<String, DisplayError> {
+    pub fn to_ascii(&self) -> Result<String, DisplayError> {
         self.ensure_initialized()?;
 
         let mut output = String::new();
@@ -159,13 +126,9 @@ impl Display {
 
         for row in 0..rows {
             for x in 0..self.width() {
-                let top =
-                    self.visible_pixel(x, row * 2)?;
+                let top = self.visible_pixel(x, row * 2)?;
 
-                let bottom = self.visible_pixel(
-                    x,
-                    row * 2 + 1,
-                )?;
+                let bottom = self.visible_pixel(x, row * 2 + 1)?;
 
                 let ch = match (top, bottom) {
                     (false, false) => ' ',
@@ -183,9 +146,7 @@ impl Display {
         Ok(output)
     }
 
-    pub fn to_pgm(
-        &self,
-    ) -> Result<Vec<u8>, DisplayError> {
+    pub fn to_pgm(&self) -> Result<Vec<u8>, DisplayError> {
         self.ensure_initialized()?;
 
         let width = self.width();
@@ -193,33 +154,22 @@ impl Display {
 
         let mut out = Vec::new();
 
-        let header = format!(
-            "P5\n{} {}\n255\n",
-            width,
-            height
-        );
+        let header = format!("P5\n{} {}\n255\n", width, height);
 
         out.extend_from_slice(header.as_bytes());
 
         for y in 0..height {
             for x in 0..width {
-                let pixel =
-                    self.visible_pixel(x, y)?;
+                let pixel = self.visible_pixel(x, y)?;
 
-                out.push(if pixel {
-                    0xFF
-                } else {
-                    0x00
-                });
+                out.push(if pixel { 0xFF } else { 0x00 });
             }
         }
 
         Ok(out)
     }
 
-    pub(crate) fn ensure_initialized(
-        &self,
-    ) -> Result<(), DisplayError> {
+    pub(crate) fn ensure_initialized(&self) -> Result<(), DisplayError> {
         if !self.initialized {
             Err(DisplayError::NotInitialized)
         } else {
