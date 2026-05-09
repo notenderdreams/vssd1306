@@ -28,5 +28,5 @@ fn main() {
     display.flush().unwrap();
 
     let renderer = WindowRenderer::new(display, "Virtual SSD1306");
-    renderer.run();
+    renderer.run(|_| true);
 }

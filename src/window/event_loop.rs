@@ -8,7 +8,10 @@ use winit::{
     keyboard::{KeyCode, PhysicalKey},
 };
 
-pub fn run(display: Display, title: &str) {
+pub fn run<F>(mut display: Display, title: &str, mut update: F)
+where
+    F: FnMut(&mut Display) -> bool + 'static,
+{
     let event_loop = EventLoop::new().unwrap();
 
     let window = Arc::new(
@@ -64,6 +67,9 @@ pub fn run(display: Display, title: &str) {
                     _ => {}
                 },
                 Event::AboutToWait => {
+                    if !update(&mut display) {
+                        elwt.exit();
+                    }
                     window.request_redraw();
                 }
                 _ => (),

@@ -16,7 +16,10 @@ impl WindowRenderer {
         }
     }
     
-    pub fn run(self) {
-        event_loop::run(self.display, &self.title);
+    pub fn run<F>(self, update: F)
+    where
+        F: FnMut(&mut crate::display::Display) -> bool + 'static,
+    {
+        event_loop::run(self.display, &self.title, update);
     }
 }

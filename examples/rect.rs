@@ -60,7 +60,7 @@ fn main() {
     {
         println!("Opening virtual window...");
         let renderer = WindowRenderer::new(display, "Rectangle & Diagonals");
-        renderer.run();
+        renderer.run(|_| true);
     }
 
     // Fallback to ASCII output in the console if the "window" feature is not enabled
